@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GuardianChat</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <h3>Users</h3>
+            <ul>
+                {% for user in users %}
+                <li>
+                    <a href="/chat?user_id={{ user.id }}" class="{% if chat_with == user.id %}active{% endif %}">
+                        {{ user.username }} ({{ user.role }})
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            <br>
+            <a href="/logout" class="btn">Logout</a>
+            {% if current_user.role == 'guardian' %}
+            <a href="/guardian" class="btn" style="margin-top: 10px;">Dashboard</a>
+            {% endif %}
+        </div>
+        <div class="main-chat">
+            {% if chat_with %}
+                <div class="messages" id="messages-container">
+                    <!-- Messages loaded via JS -->
+                </div>
+                <div class="input-area">
+                    <input type="text" id="message-input" placeholder="Type a message...">
+                    <button onclick="sendMessage({{ chat_with }})">Send</button>
+                </div>
+            {% else %}
+                <div class="no-chat">
+                    <p>Select a user to start chatting</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        const chatWithId = {{ chat_with if chat_with else 'null' }};
+        const currentUsername = "{{ current_user.username }}";
+    </script>
+    <script src="/static/chat.js"></script>
+</body>
+</html>

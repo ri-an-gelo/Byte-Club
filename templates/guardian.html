@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guardian Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container dashboard">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Guardian Dashboard</h1>
+            <div>
+                <a href="/chat" class="btn">Go to Chat</a>
+                <a href="/logout" class="btn">Logout</a>
+            </div>
+        </header>
+        
+        <h2>Alerts</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Sender</th>
+                    <th>Message</th>
+                    <th>Severity</th>
+                    <th>Confidence</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts %}
+                <tr class="{{ alert.severity }}">
+                    <td>{{ alert.alert_time.split('T')[0] }} {{ alert.alert_time.split('T')[1][:5] if alert.alert_time.split('T')[1:] else '' }}</td>
+                    <td>{{ alert.sender_name }}</td>
+                    <td>{{ alert.text }}</td>
+                    <td>{{ alert.severity }}</td>
+                    <td>{{ alert.confidence }}%</td>
+                    <td>{{ alert.reason }}</td>
+                    <td id="status-{{ alert.alert_id }}">{{ alert.status }}</td>
+                    <td>
+                        {% if alert.status == 'new' %}
+                        <button onclick="updateAlert({{ alert.alert_id }}, 'resolved')">Resolve</button>
+                        <button onclick="updateAlert({{ alert.alert_id }}, 'ignored')">Ignore</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not alerts %}
+                <tr>
+                    <td colspan="8" style="text-align: center;">No alerts found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function updateAlert(alertId, status) {
+            fetch(`/api/alerts/${alertId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'ok') {
+                    document.getElementById(`status-${alertId}`).innerText = status;
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
